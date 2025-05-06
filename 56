@@ -1,0 +1,34 @@
+CREATE PROCEDURE GetCustomerFromDB2
+    @id VARCHAR(20),
+    @depart VARCHAR(20)
+AS
+BEGIN
+    -- 建立暫存表
+    IF OBJECT_ID('tempdb..#temp_customer') IS NOT NULL
+        DROP TABLE #temp_customer;
+
+    CREATE TABLE #temp_customer (
+        depart   VARCHAR(50),
+        id       VARCHAR(50),
+        name     VARCHAR(100),
+        tel      VARCHAR(50),
+        address  VARCHAR(200),
+        birthday DATE
+    );
+
+    -- 從 DB2 撈取資料並插入到暫存表
+    INSERT INTO #temp_customer (depart, id, name, tel, address, birthday)
+    SELECT
+        depart,
+        id,
+        name,
+        tel,
+        address,
+        birthday
+    FROM OPENQUERY(DB2_LINK,
+        'SELECT depart, id, name, tel, address, birthday
+         FROM db2_schema.customer
+         WHERE id = ''{ID_PLACEHOLDER}'' AND depart = ''{DEPART_PLACEHOLDER}'''
+    );
+
+END;
